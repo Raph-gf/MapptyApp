@@ -12,12 +12,19 @@ const inputElevation = document.querySelector('.form__input--elevation');
 class App {
   #map;
   #circle;
+  #popup;
   #mapZoomLevel = 13;
   #mapEvent;
   #workout = [];
 
   constructor() {
+    // Get user's position
     this._getPosition();
+
+    // Get data from localStorage
+    this._getLocalStorage();
+
+    // Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
@@ -37,25 +44,33 @@ class App {
   _loadMap(position) {
     const { latitude, longitude } = position.coords;
 
-    console.log(`https://www.google.com/maps/@${latitude},${longitude}`); // just for fun
-
     // LeafLet library
     const coords = [latitude, longitude];
     this.#map = L.map('map').setView(coords, this.#mapZoomLevel);
 
-    // this.#circle = L.circle([latitude, longitude], {
-    //   color: 'red',
-    //   fillOpacity: 0.5,
-    //   radius: 200,
-    // }).addTo(this.#map);
+    const localPopup = (this.#popup = L.popup()
+      .setLatLng(coords)
+      .setContent('You are here 🌍')
+      .openOn(this.#map));
 
-    L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+    this.#circle = L.circleMarker(coords, {
+      color: 'red',
+      fillOpacity: 0.5,
+      radius: 10,
+    })
+      .on('click', () => localPopup.openOn(this.#map))
+      .addTo(this.#map);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:
         '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team',
     }).addTo(this.#map);
 
     // Handling click's on map
     this.#map.on('click', this._showForm.bind(this));
+
+    // render workout markers
+    this.#workout.forEach(work => this._renderWorkoutMarker(work));
   }
 
   _showForm(mapE) {
@@ -128,7 +143,11 @@ class App {
 
     // hide from + clear input fields
     this._hideForm();
+
+    // Set locale storage to all workout
+    this._setLocaleStorage();
   }
+
   _renderWorkoutMarker(workout) {
     // Display marker
     L.marker(workout.coords)
@@ -147,6 +166,7 @@ class App {
       )
       .openPopup();
   }
+
   _renderWorkout(workout) {
     let html = `<li class="workout workout--${workout.type}" data-id="${
       workout.id
@@ -192,6 +212,7 @@ class App {
            </li>`;
     form.insertAdjacentHTML('afterend', html);
   }
+
   _moveToPopup(e) {
     const workoutEl = e.target.closest('.workout');
 
@@ -200,7 +221,6 @@ class App {
     const workout = this.#workout.find(
       work => work.id === workoutEl.dataset.id
     );
-    console.log(workout);
 
     this.#map.setView(workout.coords, (this.#mapZoomLevel = 15), {
       animate: true,
@@ -208,7 +228,25 @@ class App {
     });
 
     // Using public interface
-    workout.click();
+    // workout.click();
+  }
+
+  _setLocaleStorage() {
+    localStorage.setItem('workouts', JSON.stringify(this.#workout));
+  }
+
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem('workouts'));
+
+    if (!data) return;
+
+    this.#workout = data;
+    this.#workout.forEach(work => this._renderWorkout(work));
+  }
+
+  reset() {
+    localStorage.removeItem('workouts');
+    location.reload();
   }
 }
 
