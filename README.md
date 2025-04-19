@@ -1,5 +1,9 @@
 Workout Tracker - Projet Éducatif OOP JavaScript
 
+![image](https://github.com/user-attachments/assets/a4c8d1d1-3695-4f5a-9117-0fd0c5ec69ce)
+
+
+
 📚 Contexte Pédagogique
 Ce projet fait partie du cours "The Complete JavaScript Course 2024" de Jonas Schmedtmann sur Udemy. Il a été développé dans le but de :
 
