@@ -11,6 +11,8 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
+let map, mapEvent;
+
 if (navigator.geolocation) {
   navigator.geolocation.getCurrentPosition(
     function (position) {
@@ -20,14 +22,20 @@ if (navigator.geolocation) {
 
       // LeafLet library
       const coords = [latitude, longitude];
-      const map = L.map('map').setView(coords, 15);
+      map = L.map('map').setView(coords, 15);
 
       L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
         attribution:
           '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team',
       }).addTo(map);
 
-      L.marker(coords).addTo(map).bindPopup('Hii there 👋').openPopup();
+      // Handling click's on map
+      map.on('click', function (mapE) {
+        mapEvent = mapE;
+        console.log(mapEvent);
+        form.classList.remove('hidden');
+        inputDistance.focus();
+      });
     },
 
     function () {
@@ -35,3 +43,30 @@ if (navigator.geolocation) {
     }
   );
 }
+
+form.addEventListener('submit', function (e) {
+  e.preventDefault();
+  // Clear input field
+  inputDistance.value = '';
+  inputCadence.value = '';
+  inputDuration.value = '';
+  // Display marker
+  const { lat, lng } = mapEvent.latlng;
+  L.marker([lat, lng])
+    .addTo(map)
+    .bindPopup(
+      L.popup({
+        maxWidth: 250,
+        minWidth: 100,
+        autoClose: false,
+        closeOnClick: false,
+        className: 'running-popup',
+      })
+    )
+    .setPopupContent('Hii 👋')
+    .openPopup();
+});
+inputType.addEventListener('change', function () {
+  inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
+  inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
+});
