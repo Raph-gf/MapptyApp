@@ -11,6 +11,7 @@ const inputElevation = document.querySelector('.form__input--elevation');
 // APPLICATION ARCHHITECTURE
 class App {
   #map;
+  #circle;
   #mapZoomLevel = 13;
   #mapEvent;
   #workout = [];
@@ -41,6 +42,12 @@ class App {
     // LeafLet library
     const coords = [latitude, longitude];
     this.#map = L.map('map').setView(coords, this.#mapZoomLevel);
+
+    // this.#circle = L.circle([latitude, longitude], {
+    //   color: 'red',
+    //   fillOpacity: 0.5,
+    //   radius: 200,
+    // }).addTo(this.#map);
 
     L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
       attribution:
@@ -122,8 +129,8 @@ class App {
     // hide from + clear input fields
     this._hideForm();
   }
-  // Display marker
   _renderWorkoutMarker(workout) {
+    // Display marker
     L.marker(workout.coords)
       .addTo(this.#map)
       .bindPopup(
@@ -254,8 +261,3 @@ class Cycling extends Workout {
   }
 }
 const app = new App();
-
-// const run1 = new Running([39, -12], 5.2, 24, 178);
-// const cycling1 = new Cycling([39, -12], 25, 9, 523);
-
-// console.log(run1, cycling1);
